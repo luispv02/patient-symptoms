@@ -15,33 +15,18 @@ export const Symptoms = () => {
   const deleteSymptoms = (id) => {
     const updatedSymptoms = symptomsList.filter(symptoms => symptoms.id !== id);
     setSymptomsList(updatedSymptoms)
-
-    const data = getLocalStorageData();
-    const newLocalData = {
-      ...data,
-      symptomsList: updatedSymptoms
-    }
-    localStorage.setItem("symptomsData", JSON.stringify(newLocalData))
   }
 
   const editSymptom = (newData) => {
     const sintomaActualizado = symptomsList.map(value => value.id === newData.id ? { ...newData } : value)
     setSymptomsList(sintomaActualizado)
-
-    const data = getLocalStorageData();
-    const newLocalData = {
-      ...data,
-      symptomsList: sintomaActualizado
-    }
-    localStorage.setItem("symptomsData", JSON.stringify(newLocalData))
   }
 
   useEffect(() => {
-    const storedData = localStorage.getItem("symptomsData");
-    if (storedData) {
-      const parsedData = JSON.parse(storedData);
-      setName(parsedData.name);
-      setSymptomsList(parsedData.symptomsList);
+    const storedData = getLocalStorageData()
+    if(storedData){
+      storedData.name && setName(storedData.name);
+      setSymptomsList(storedData.symptomsList);
     }
   }, []);
 
@@ -54,8 +39,18 @@ export const Symptoms = () => {
   }
 
   const saveSymptoms = () => {
-    if(name.trim().length === 0) return setMsgError('Debes agregar un nombre')
-    if(!symptomsList.length) return setMsgError('No hay síntomas agregados')
+    const storedData = getLocalStorageData()
+    if(name.trim().length === 0) return showError('Debes agregar un nombre')
+    if(symptomsList.length === 0){
+      if(storedData?.symptomsList.length){
+        localStorage.removeItem('symptomsData')
+        setName('');  
+        alert('Datos eliminados')
+        return
+      }else{
+        return showError('No hay síntomas agregados')
+      }
+    }
     
     const symptomsData = {
       name,
@@ -67,6 +62,10 @@ export const Symptoms = () => {
     alert("Datos Guardados")
   }
 
+  const showError = (msg) => {
+    setMsgError(msg)
+    setTimeout(() => setMsgError(''), 3000)
+  }
 
   return (
     <div className="flex justify-center items-start">
